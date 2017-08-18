@@ -290,7 +290,6 @@ body {
 	
 	var socket=io();
 	socket.on('connect', function(){
-	alert(socket.io.engine.id);
 		$("#sktId").val(socket.io.engine.id);
 	});
 	
