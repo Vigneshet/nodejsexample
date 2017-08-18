@@ -205,6 +205,8 @@ body {
     display:block;
 }
 
+
+
 </style>
  <head>
 <body>
@@ -230,31 +232,12 @@ body {
 </div>
 <div class="message_template">
 	<li class="message">
-		<div class="avatar"></div>
 		<div class="text_wrapper">
 			<div class="text"></div>
 		</div>
 	</li>
 </div>       
         
-<!-- <div id="my-modal" class="modal fade in">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">User Detail</h4>
-            </div>
-            <div class="modal-body">
-                <input type="text" class="form-control" id="usr" placeholder="User Name"/>
-            </div>
-			<div class="modal-footer">
-				<button type="button" align="right" class="btn btn-primary" id="chatinit">Initiate Chat</button>
-			</div>
-        </div>
-    </div> 
-</div>
-
-<div class="modal-backdrop fade in"></div> -->
-      
 
 <!-- Modal -->
 <div class="modal fade" id="memberModal" tabindex="-1" role="dialog" aria-labelledby="memberModalLabel" aria-hidden="true">
@@ -264,7 +247,9 @@ body {
                 <h4 class="modal-title">User Detail</h4>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control" id="usr" placeholder="User Name"/>
+                <input type="text" class="form-control" id="usr" placeholder="User Name"/><br>
+				<input type="text" class="form-control" id="sktId" readonly /><br>
+				<input type="text" class="form-control" id="tosktId" placeholder="Your Friend's Id Please"/>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-dismiss="modal" id="chatinit">Initiate Chat</button>
@@ -297,9 +282,18 @@ body {
     $(function () {
 	
 		 $('#memberModal').modal('show');
+		 $('#chatinit').click(function(){
+			//$('.user-name').html($('#usr').val());
+			
+		 });
 	
 	
 	var socket=io();
+	socket.on('connect', function(){
+	alert(socket.io.engine.id);
+		$("#sktId").val(socket.io.engine.id);
+	});
+	
         var getMessageText, message_side, sendMessage;
         message_side = 'right';
         getMessageText = function () {
@@ -324,10 +318,10 @@ body {
         };
         $('.send_message').click(function (e) {
 		//alert($("#usr").val());
-		//var data =$('#usr').val()+'~'+$('.message_input').val();
-		socket.emit('chat message',$('.message_input').val());
+		var data =$('#tosktId').val()+'~'+$('.message_input').val();
+		socket.emit('chat message',data);
+		sendMessage($('.message_input').val());
 			$('.message_input').val('');
-           // return sendMessage(getMessageText());
         });
 		socket.on('chat reply',function(msg){
 			return sendMessage(msg);
@@ -335,6 +329,8 @@ body {
 		
         $('.message_input').keyup(function (e) {
             if (e.which === 13) {
+			var data =$('#tosktId').val()+'~'+$('.message_input').val();
+		socket.emit('chat message',data);
                 return sendMessage(getMessageText());
             }
         });
