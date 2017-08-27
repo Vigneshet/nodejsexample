@@ -40,30 +40,75 @@
     isClosed = true;
    }
   }
-
-  $('[data-toggle="offcanvas"]').click(function() {
-	  $("#chat-members").html('<li class="sidebar-brand"><a href="#">Users</a></li>');
+  
+  
+  function loadhierarchy(){
+	  
+	   $("#chat-members").html('<li class="sidebar-brand"><a href="#">Users</a></li>');
 	  $.ajax({
 		  url:'/userDetails',
 		  success:function(res){
-			  //alert(res);
+			 // alert(res);
 			  var chatmembers = res.split("#");
 			  //alert(chatmembers.length);
 			  for(var i=0;i<(chatmembers.length-1);i++){
 				  var detailEmail = chatmembers[i].split("~")[0];
 				  var detailUser = chatmembers[i].split("~")[1];
-				  if($("#mailId").val()!=detailEmail)
-				  $("#chat-members").append('<li><a href="#" class="chatMem" data-mail="'+detailEmail+'" onclick="setRec(this)">'+detailUser+'</a></li>')
+				  if($("#fromsktId").val()!=detailEmail)
+				  $("#chat-members").append('<li><a href="#" class="chatMem" data-mail="'+detailEmail+'" onclick="setRec(this)">'+detailUser+'</a><ul style="display:none"></ul></li>')
 			  }
 		  }
 	  });
-	  
+  }
+  
+
+  $('[data-toggle="offcanvas"]').click(function() {
+	 
+	 $.ajax({
+		  url:'/userDetails',
+		  success:function(res){
+			  //alert(res);
+			  var chatmembers = res.split("#");
+			  //alert(chatmembers.length);
+			  var flag = false;
+			  for(var j=0;j<(chatmembers.length-1);j++){
+				  flag = false;
+				  var detailEmail = chatmembers[j].split("~")[0];
+				  var detailUser = chatmembers[j].split("~")[1];
+				  if($("#fromsktId").val()!=detailEmail){
+					  var listItems = $("#chat-members li");
+				  listItems.each(function(){
+					var aTag = $(this).find(".chatMem");
+					
+			  var dataMailId =$(aTag).attr("data-mail");
+			  if(dataMailId!=null && dataMailId!='' && dataMailId!="undefined" && dataMailId!=undefined && dataMailId == detailEmail){
+				 
+				flag=true;
+				 
+			  }
+				  });
+				 
+
+if(!flag){
+	 $("#chat-members").append('<li><a href="#" class="chatMem" data-mail="'+detailEmail+'" onclick="setRec(this)">'+detailUser+'</a><ul style="display:none"></ul></li>')
+}
+				  }
+				  
+				  
+ 
+ 
+ 
+ 
+			  }
+		  }	
+	  });
+	 
    $('#wrapper').toggleClass('toggled');
   });
 
   
   
-
+loadhierarchy();
   var socket = io();
   socket.on('connect', function() {
    //$("#sktId").val(socket.io.engine.id);
@@ -93,12 +138,13 @@ $("#fromsktId").val($("#mailId").val());
    }
    $('.message_input').val('');
    $messages = $('.messages');
-   message_side = message_side === 'left' ? 'right' : 'left';
+   //message_side = message_side === 'left' ? 'right' : 'left';
    message = new Message({
     text: text,
     message_side: message_side
    });
    message.draw();
+   message_side = 'right';
    return $messages.animate({
     scrollTop: $messages.prop('scrollHeight')
    }, 300);
@@ -116,13 +162,23 @@ $("#fromsktId").val($("#mailId").val());
   });
   socket.on('chat reply', function(data) {
 	  //alert(data.fromSocketId);
+	  
 	  var currentMessenger =$("#chatBox").find(".title").attr("data-mailId");
 	  if(currentMessenger!=null && currentMessenger!='' && currentMessenger!="undefined" && currentMessenger!=undefined && currentMessenger == data.fromSocketId){
+		  message_side = 'left';
 			return sendMessage(data.msgData);
 	  } 
 	  else{
-		  
-		  
+		 // alert(data.fromSocketId);
+		 // alert($("#chat-members").find(".a").length);
+		  $("#chat-members").find(".chatMem").each(function(i,link){
+			  var dataMailId = $(link).attr("data-mail");
+			 // alert(dataMailId);
+			  if(dataMailId!=null && dataMailId!='' && dataMailId!="undefined" && dataMailId!=undefined && dataMailId == data.fromSocketId){
+				  console.log($(link).next());
+				  $(link).next().append('<li class="message left appeared"><div class="text_wrapper"><div class="text">'+data.msgData+'</div></div></li>');
+			  }
+		  });
 	  }
    
   });
@@ -144,8 +200,18 @@ $("#fromsktId").val($("#mailId").val());
 
 var setRec = function(ths){
 	  //alert($(ths).attr("data-mail"));
+	  var targetId = $("#chatBox").find(".title").attr("data-mailId");
+	  $("#chat-members").find(".chatMem").each(function(i,link){
+		  var dataMailId = $(link).attr("data-mail");
+	  if(targetId!=null && targetId!='' && targetId!="undefined" && targetId!=undefined && dataMailId==targetId){
+		  $(link).next().html($("#chatBox").find(".messages").html())
+	  }
+	  });
+	  
 	  $("#tosktId").val($(ths).attr("data-mail"));
 	  $("#chatBox").attr("style","display:block");
 	  $("#chatBox").find(".title").attr("data-mailId",$(ths).attr("data-mail"));
 	  $("#chatBox").find(".title").html($(ths).html());
+	  $("#chatBox").find(".messages").html($(ths).next().html());
+	  
 }
