@@ -116,11 +116,34 @@ loadhierarchy();
   });
 
   $("#chatinit").click(function() {
-$("#fromsktId").val($("#mailId").val());
+	  
+	  if($("#mailId").val()!=null && $("#mailId").val()!='' && $("#mailId").val()!='undefined' && $("#mailId").val()!=undefined && $("#usr").val()!=null && $("#usr").val()!='' && $("#usr").val()!='undefined' && $("#usr").val()!=undefined){
+			$("#fromsktId").val($("#mailId").val());
    socket.emit('join', {
     username: $("#usr").val(),
     mailid: $("#mailId").val()
    });
+   $('#memberModal').modal('hide');
+	  }else{
+		  
+		$('#memberModal').modal('show');  
+	  if($("#mailId").val()==null || $("#mailId").val()=='' || $("#mailId").val()=='undefined' || $("#mailId").val()==undefined){
+		$("#mailId").attr("style","border: 2px solid red;border-radius: 4px;");  
+	  }else{
+		  
+		  $("#mailId").attr("style","");
+	  }
+		
+	if($("#usr").val()==null || $("#usr").val()=='' || $("#usr").val()=='undefined' || $("#usr").val()==undefined){
+		$("#usr").attr("style","border: 2px solid red;border-radius: 4px;");  
+	}else{
+		
+		$("#usr").attr("style","");
+	}
+		
+	  }
+	  
+	  
   })
 
 
@@ -176,6 +199,16 @@ $("#fromsktId").val($("#mailId").val());
 			 // alert(dataMailId);
 			  if(dataMailId!=null && dataMailId!='' && dataMailId!="undefined" && dataMailId!=undefined && dataMailId == data.fromSocketId){
 				  console.log($(link).next());
+				   var check = $(link).html();
+				  if(check.indexOf("-")>-1){
+					  var name = check.split("-")[0];
+					  var count = check.split("-")[1];
+					  count= parseInt(count)+1;
+					  $(link).html(name+"-"+count);
+				  }else{
+					  var name = $(link).html();
+					  $(link).html(name+"-"+1);
+				  }
 				  $(link).next().append('<li class="message left appeared"><div class="text_wrapper"><div class="text">'+data.msgData+'</div></div></li>');
 			  }
 		  });
@@ -211,7 +244,14 @@ var setRec = function(ths){
 	  $("#tosktId").val($(ths).attr("data-mail"));
 	  $("#chatBox").attr("style","display:block");
 	  $("#chatBox").find(".title").attr("data-mailId",$(ths).attr("data-mail"));
-	  $("#chatBox").find(".title").html($(ths).html());
+	  var check = $(ths).html();
+	  if(check.indexOf("-")>-1){
+		  $("#chatBox").find(".title").html(check.split("-")[0]);
+		  $(ths).html(check.split("-")[0]);
+	  }else{
+		$("#chatBox").find(".title").html($(ths).html());  
+	  }
+	  
 	  $("#chatBox").find(".messages").html($(ths).next().html());
 	  
 }
